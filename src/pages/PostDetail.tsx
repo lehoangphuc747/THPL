@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { Post, Heading } from '@/types/post';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, User, Folder, RefreshCw } from 'lucide-react';
+import { Calendar, User, Folder, RefreshCw, Tags } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 import { usePosts } from '@/hooks/usePosts';
@@ -55,8 +55,6 @@ const PostDetail = () => {
   }, [slug]);
 
   useEffect(() => {
-    // We don't need to check for reader mode here anymore, 
-    // as the TOC is always in the document flow.
     if (loading) return;
 
     const articleElement = document.querySelector('article');
@@ -142,7 +140,7 @@ const PostDetail = () => {
           <article>
             <header className="mb-8">
               <h1 className="text-4xl font-bold mb-2">{frontmatter.title}</h1>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground text-sm">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground text-sm mb-4">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   {frontmatter.authorUrl ? (
@@ -169,6 +167,14 @@ const PostDetail = () => {
                     {frontmatter.category}
                   </Link>
                 </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Tags className="w-4 h-4 text-muted-foreground" />
+                {frontmatter.tags.map(tag => (
+                  <Link to={`/bai-viet?tag=${encodeURIComponent(tag)}`} key={tag}>
+                    <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors">{tag}</Badge>
+                  </Link>
+                ))}
               </div>
             </header>
 
@@ -200,14 +206,6 @@ const PostDetail = () => {
 
             <div className="prose dark:prose-invert max-w-none mt-8">
               <Content />
-            </div>
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              {frontmatter.tags.map(tag => (
-                <Link to={`/bai-viet?tag=${encodeURIComponent(tag)}`} key={tag}>
-                  <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors">{tag}</Badge>
-                </Link>
-              ))}
             </div>
 
             <PostNavigation prevPost={prevPost} nextPost={nextPost} />
