@@ -17,37 +17,34 @@ import { usePageContext } from '@/components/Layout';
 const PostDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { scrollDirection } = usePageContext();
-  const { posts: allPosts, loading: postsLoading } = usePosts(); // Lấy tất cả bài viết và trạng thái tải từ usePosts
-  const [post, setPost] = useState<Post | null>(null);
+  const { posts: allPosts, loading: postsLoading } = usePosts();
   const [error, setError] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [isReaderMode, setIsReaderMode] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  // Derive post directly from allPosts
+  const post = useMemo(() => {
+    if (!slug || postsLoading) return null;
+    return allPosts.find(p => p.frontmatter.slug === slug) || null;
+  }, [slug, allPosts, postsLoading]);
 
   useEffect(() => {
     const savedReaderMode = localStorage.getItem('readerMode') === 'true';
     setIsReaderMode(savedReaderMode);
   }, []);
 
+  // The error state should now be derived from `post` as well
   useEffect(() => {
-    if (postsLoading) return; // Chờ cho đến khi tất cả bài viết được tải
-
-    if (!slug) {
+    if (!postsLoading && !post && slug) { // Only set error if loading is done, post is not found, and slug exists
       setError(true);
-      return;
+    } else if (post) {
+      setError(false); // Clear error if post is found
     }
-
-    const foundPost = allPosts.find(p => p.frontmatter.slug === slug);
-    if (foundPost) {
-      setPost(foundPost);
-      setError(false);
-    } else {
-      setError(true);
-    }
-  }, [slug, allPosts, postsLoading]); // Thêm allPosts và postsLoading vào dependency array
+  }, [post, postsLoading, slug]);
 
   useEffect(() => {
-    if (!post) return; // Chỉ xử lý khi post đã được tải
+    if (!post) return;
 
     const articleElement = document.querySelector('article');
     if (!articleElement) return;
@@ -56,12 +53,14 @@ const PostDetail = () => {
     const extractedHeadings = headingElements.map((el, index) => {
       const text = el.textContent || '';
       const level = parseInt(el.tagName.substring(1), 10);
-      const slugValue = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-') + `-${index}`;
+      // Ensure slug is unique and valid for IDs
+      const baseSlug = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/^-+|-+$/g, '');
+      const slugValue = baseSlug ? `${baseSlug}-${index}` : `heading-${index}`; // Fallback if text is empty
       el.id = slugValue;
       return { level, text, slug: slugValue };
     });
     setHeadings(extractedHeadings);
-  }, [post]); // Chỉ chạy khi post thay đổi
+  }, [post]);
 
   const { prevPost, nextPost } = useMemo(() => {
     if (!slug || allPosts.length === 0) return { prevPost: undefined, nextPost: undefined };
@@ -87,7 +86,7 @@ const PostDetail = () => {
     });
   };
 
-  if (postsLoading) { // Sử dụng trạng thái tải từ usePosts
+  if (postsLoading) {
     return (
       <div className="container max-w-3xl mx-auto px-4 py-8">
         <Skeleton className="h-12 w-3/4 mb-4" />
