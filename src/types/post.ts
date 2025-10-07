@@ -10,6 +10,10 @@ export interface PostFrontmatter {
   cover: string;
   coverAlt: string;
   coverCaption: string;
+  series?: {
+    name: string;
+    part: number;
+  };
 }
 
 export interface Post {

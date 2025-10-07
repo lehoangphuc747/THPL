@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { Post } from '@/types/post';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, User, Folder } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Helmet } from 'react-helmet-async';
+import { usePosts } from '@/hooks/usePosts';
+import SeriesNavigation from '@/components/SeriesNavigation';
 
 const PostDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -12,11 +14,16 @@ const PostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const { posts: allPosts } = usePosts();
+
   useEffect(() => {
     const fetchPost = async () => {
       if (!slug) return;
+      setLoading(true);
+      setError(false);
       try {
-        const postModule = await import(`../../content/posts/${slug}.mdx`);
+        // Thêm một chuỗi ngẫu nhiên để tránh cache khi chuyển trang
+        const postModule = await import(`../../content/posts/${slug}.mdx?t=${new Date().getTime()}`);
         setPost({
           frontmatter: postModule.frontmatter,
           Content: postModule.default,
@@ -31,6 +38,15 @@ const PostDetail = () => {
 
     fetchPost();
   }, [slug]);
+
+  const seriesPosts = useMemo(() => {
+    if (!post?.frontmatter.series || allPosts.length === 0) {
+      return [];
+    }
+    return allPosts.filter(
+      p => p.series && p.series.name === post.frontmatter.series?.name
+    );
+  }, [allPosts, post]);
 
   if (loading) {
     return (
@@ -89,6 +105,15 @@ const PostDetail = () => {
             ))}
           </div>
         </header>
+
+        {frontmatter.series && seriesPosts.length > 1 && (
+          <SeriesNavigation
+            seriesName={frontmatter.series.name}
+            currentSlug={frontmatter.slug}
+            seriesPosts={seriesPosts}
+          />
+        )}
+
         <div className="prose dark:prose-invert max-w-none">
           <Content />
         </div>
