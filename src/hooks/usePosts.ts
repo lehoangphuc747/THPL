@@ -10,15 +10,14 @@ export function usePosts() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const modules = import.meta.glob<PostModule>('/content/posts/*.mdx');
-      const postPromises = Object.entries(modules).map(async ([path, resolver]) => {
-        const { frontmatter } = await resolver();
-        return { ...frontmatter };
+    const fetchPosts = () => {
+      // Chuyển sang eager loading để đảm bảo các bài viết luôn được tìm thấy
+      const modules = import.meta.glob<PostModule>('/content/posts/*.mdx', { eager: true });
+      
+      const allPosts = Object.values(modules).map(module => {
+        return { ...module.frontmatter };
       });
 
-      const allPosts = await Promise.all(postPromises);
-      
       // Lọc và sắp xếp bài viết
       const publishedPosts = allPosts
         .filter(post => post.status === 'published')
