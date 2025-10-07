@@ -11,19 +11,38 @@ export function usePosts() {
 
   useEffect(() => {
     const fetchPosts = () => {
-      // Chuyển sang eager loading để đảm bảo các bài viết luôn được tìm thấy
       const modules = import.meta.glob<PostModule>('/content/posts/*.mdx', { eager: true });
       
       const allPosts = Object.values(modules).map(module => {
         return { ...module.frontmatter };
       });
 
-      // Lọc và sắp xếp bài viết
       const publishedPosts = allPosts
-        .filter(post => post.status === 'published')
+        .filter(post => post && post.status === 'published')
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-      setPosts(publishedPosts);
+      // --- BẮT ĐẦU TEST ---
+      // Thêm một bài viết giả để kiểm tra giao diện
+      const testPost: PostFrontmatter = {
+        slug: 'test-post',
+        title: 'Đây là bài viết chẩn đoán',
+        date: new Date().toISOString(),
+        updated: new Date().toISOString(),
+        status: 'published',
+        author: 'Hệ thống',
+        category: 'Chẩn đoán',
+        tags: ['debug', 'test'],
+        cover: '/placeholder.svg',
+        coverAlt: 'Ảnh test',
+        coverCaption: 'Ảnh test',
+      };
+
+      // Gộp bài viết thật với bài viết giả
+      const finalPosts = [testPost, ...publishedPosts];
+      console.log("Các bài viết cuối cùng được hiển thị:", finalPosts);
+      setPosts(finalPosts);
+      // --- KẾT THÚC TEST ---
+
       setLoading(false);
     };
 
