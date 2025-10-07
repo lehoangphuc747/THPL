@@ -144,11 +144,11 @@ const PostDetail = () => {
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   {frontmatter.authorUrl ? (
-                    <a href={frontmatter.authorUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary hover:underline">
-                      {frontmatter.author}
+                    <a href={frontmatter.authorUrl} target="_blank" rel="noopener noreferrer">
+                      <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors">{frontmatter.author}</Badge>
                     </a>
                   ) : (
-                    <span>{frontmatter.author}</span>
+                    <Badge variant="secondary">{frontmatter.author}</Badge>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -163,8 +163,8 @@ const PostDetail = () => {
                 )}
                 <div className="flex items-center gap-2">
                   <Folder className="w-4 h-4" />
-                  <Link to={`/bai-viet?category=${encodeURIComponent(frontmatter.category)}`} className="hover:text-primary hover:underline">
-                    {frontmatter.category}
+                  <Link to={`/bai-viet?category=${encodeURIComponent(frontmatter.category)}`}>
+                    <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors">{frontmatter.category}</Badge>
                   </Link>
                 </div>
               </div>
