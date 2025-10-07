@@ -6,6 +6,7 @@ export interface PostFrontmatter {
   updated: string;
   status: "published" | "draft" | "unlisted" | "pinned";
   author: string;
+  authorUrl?: string;
   category: string;
   subcategory?: string;
   tags: string[];

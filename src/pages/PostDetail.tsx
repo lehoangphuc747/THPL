@@ -145,7 +145,13 @@ const PostDetail = () => {
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground text-sm">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  <span>{frontmatter.author}</span>
+                  {frontmatter.authorUrl ? (
+                    <a href={frontmatter.authorUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary hover:underline">
+                      {frontmatter.author}
+                    </a>
+                  ) : (
+                    <span>{frontmatter.author}</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
