@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import { Post } from '@/types/post';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, User, Tag } from 'lucide-react';
+import { Calendar, User, Folder } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 
@@ -72,10 +72,20 @@ const PostDetail = () => {
               <Calendar className="w-4 h-4" />
               <time dateTime={frontmatter.date}>{postDate}</time>
             </div>
+            <div className="flex items-center gap-2">
+              <Folder className="w-4 h-4" />
+              <Link to={`/bai-viet?category=${encodeURIComponent(frontmatter.category)}`} className="hover:text-primary hover:underline">
+                {frontmatter.category}
+              </Link>
+            </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {frontmatter.tags.map(tag => (
-              <Badge key={tag} variant="secondary">{tag}</Badge>
+              <Link to={`/bai-viet?tag=${encodeURIComponent(tag)}`} key={tag}>
+                <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors">
+                  {tag}
+                </Badge>
+              </Link>
             ))}
           </div>
         </header>
