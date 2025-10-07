@@ -27,11 +27,36 @@ const SearchPage = () => {
   const [endDate, setEndDate] = useState<Date | undefined>();
 
   const filterOptions = useMemo(() => {
-    const authors = [...new Set(searchablePosts.map(p => p.author))].filter(author => typeof author === 'string');
-    const categories = [...new Set(searchablePosts.map(p => p.category))].filter(cat => typeof cat === 'string');
-    const tags = [...new Set(searchablePosts.flatMap(p => p.tags || []))].filter(tag => typeof tag === 'string');
-    const series = [...new Set(searchablePosts.map(p => p.series).filter(Boolean))] as string[];
-    return { authors, categories, tags, series };
+    const allAuthors: string[] = [];
+    const allCategories: string[] = [];
+    const allTags: string[] = [];
+    const allSeries: string[] = [];
+
+    for (const post of searchablePosts) {
+        if (post.author && typeof post.author === 'string') {
+            allAuthors.push(post.author);
+        }
+        if (post.category && typeof post.category === 'string') {
+            allCategories.push(post.category);
+        }
+        if (post.tags && Array.isArray(post.tags)) {
+            for (const tag of post.tags) {
+                if (tag && typeof tag === 'string') {
+                    allTags.push(tag);
+                }
+            }
+        }
+        if (post.series && typeof post.series === 'string') {
+            allSeries.push(post.series);
+        }
+    }
+
+    return {
+        authors: [...new Set(allAuthors)],
+        categories: [...new Set(allCategories)],
+        tags: [...new Set(allTags)],
+        series: [...new Set(allSeries)],
+    };
   }, [searchablePosts]);
 
   const fuse = useMemo(() => {
@@ -183,7 +208,7 @@ const SearchPage = () => {
               <div className="space-y-3">
                 <Skeleton className="h-[125px] w-full rounded-xl" />
                 <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-3/g" />
               </div>
             </div>
           ) : (
