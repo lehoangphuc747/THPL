@@ -27,9 +27,9 @@ const SearchPage = () => {
   const [endDate, setEndDate] = useState<Date | undefined>();
 
   const filterOptions = useMemo(() => {
-    const authors = [...new Set(searchablePosts.map(p => p.author))];
-    const categories = [...new Set(searchablePosts.map(p => p.category))];
-    const tags = [...new Set(searchablePosts.flatMap(p => p.tags))];
+    const authors = [...new Set(searchablePosts.map(p => p.author))].filter(author => typeof author === 'string');
+    const categories = [...new Set(searchablePosts.map(p => p.category))].filter(cat => typeof cat === 'string');
+    const tags = [...new Set(searchablePosts.flatMap(p => p.tags || []))].filter(tag => typeof tag === 'string');
     const series = [...new Set(searchablePosts.map(p => p.series).filter(Boolean))] as string[];
     return { authors, categories, tags, series };
   }, [searchablePosts]);
