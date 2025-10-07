@@ -8,7 +8,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const navLinks = [
   { to: "/", label: "Trang chủ" },
   { to: "/bai-viet", label: "Bài viết" },
-  { to: "/tim-kiem", label: "Tìm kiếm" },
 ];
 
 interface NavbarProps {

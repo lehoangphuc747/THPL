@@ -1,22 +1,18 @@
 import { usePosts } from '@/hooks/usePosts';
 import PostListItem from '@/components/PostListItem';
-import SearchBox from '@/components/SearchBox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchParams } from 'react-router-dom';
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
-import { useDebounce } from '@/hooks/useDebounce';
 
 const POSTS_PER_PAGE = 10;
 
 const Posts = () => {
   const { posts, loading } = usePosts();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
@@ -41,14 +37,6 @@ const Posts = () => {
 
     let tempPosts = posts;
 
-    if (debouncedSearchQuery.trim()) {
-      const lowercasedQuery = debouncedSearchQuery.toLowerCase();
-      tempPosts = tempPosts.filter(post =>
-        post.title.toLowerCase().includes(lowercasedQuery) ||
-        (post.tags && Array.isArray(post.tags) && post.tags.some(tag => typeof tag === 'string' && tag.toLowerCase().includes(lowercasedQuery)))
-      );
-    }
-
     tempPosts = tempPosts.filter(post => {
       if (selectedCategory && post.category !== selectedCategory) return false;
       if (selectedTag && (!post.tags || !post.tags.includes(selectedTag))) return false;
@@ -59,7 +47,7 @@ const Posts = () => {
     const pinnedPosts = tempPosts.filter(p => p.status === 'pinned');
     const otherPosts = tempPosts.filter(p => p.status !== 'pinned');
     return [...pinnedPosts, ...otherPosts];
-  }, [posts, debouncedSearchQuery, selectedCategory, selectedTag, selectedSeries]);
+  }, [posts, selectedCategory, selectedTag, selectedSeries]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -85,7 +73,7 @@ const Posts = () => {
   
   useEffect(() => {
     setVisibleCount(POSTS_PER_PAGE);
-  }, [debouncedSearchQuery, selectedCategory, selectedTag, selectedSeries]);
+  }, [selectedCategory, selectedTag, selectedSeries]);
 
   const handleFilterChange = useCallback((type: 'category' | 'tag' | 'series', value: string) => {
     setSearchParams(prevParams => {
@@ -102,11 +90,10 @@ const Posts = () => {
 
   const clearFilters = useCallback(() => {
     setSearchParams({});
-    setSearchQuery('');
   }, [setSearchParams]);
 
   const postsToRender = filteredPosts.slice(0, visibleCount);
-  const hasActiveFilters = !!(selectedCategory || selectedTag || selectedSeries || debouncedSearchQuery);
+  const hasActiveFilters = !!(selectedCategory || selectedTag || selectedSeries);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -158,9 +145,6 @@ const Posts = () => {
           </div>
         </aside>
         <main className="w-full md:w-3/4 lg:w-4/5">
-          <div className="mb-6">
-            <SearchBox value={searchQuery} onChange={setSearchQuery} />
-          </div>
           {loading ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (

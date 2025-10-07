@@ -9,7 +9,6 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Posts from "./pages/Posts";
 import PostDetail from "./pages/PostDetail";
-import SearchPage from "./pages/Search";
 import NotFound from "./pages/NotFound";
 import AboutPage from "./pages/About";
 import ProjectsPage from "./pages/Projects";
@@ -29,7 +28,6 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/bai-viet" element={<Posts />} />
               <Route path="/bai-viet/:slug" element={<PostDetail />} />
-              <Route path="/tim-kiem" element={<SearchPage />} />
               <Route path="/gioi-thieu" element={<AboutPage />} />
               <Route path="/du-an" element={<ProjectsPage />} />
               <Route path="/uses" element={<UsesPage />} />
