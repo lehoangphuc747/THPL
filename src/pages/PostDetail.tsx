@@ -22,8 +22,7 @@ const PostDetail = () => {
       setLoading(true);
       setError(false);
       try {
-        // Thêm một chuỗi ngẫu nhiên để tránh cache khi chuyển trang
-        const postModule = await import(`../../content/posts/${slug}.mdx?t=${new Date().getTime()}`);
+        const postModule = await import(`../../content/posts/${slug}.mdx`);
         setPost({
           frontmatter: postModule.frontmatter,
           Content: postModule.default,
