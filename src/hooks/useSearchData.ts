@@ -22,11 +22,17 @@ export function useSearchData() {
       const allPosts = Object.entries(modules).map(([path, module]) => {
         if (module && module.frontmatter) {
           const rawFileContent = rawContentModules[path];
-          const { content } = matter(rawFileContent); // Tách riêng phần nội dung
-          return { 
-            ...module.frontmatter,
-            content: content, // Chỉ tìm kiếm trong nội dung bài viết
-          };
+
+          // Kiểm tra an toàn: chỉ xử lý nếu nội dung là một chuỗi ký tự
+          if (typeof rawFileContent === 'string') {
+            const { content } = matter(rawFileContent);
+            return { 
+              ...module.frontmatter,
+              content: content,
+            };
+          } else {
+            console.error(`Không thể đọc nội dung cho bài viết: ${path}`);
+          }
         }
         return null;
       }).filter(Boolean) as SearchablePost[];
