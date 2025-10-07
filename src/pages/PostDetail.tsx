@@ -17,14 +17,12 @@ import { usePageContext } from '@/components/Layout';
 const PostDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { scrollDirection } = usePageContext();
+  const { posts: allPosts, loading: postsLoading } = usePosts(); // Lấy tất cả bài viết và trạng thái tải từ usePosts
   const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [isReaderMode, setIsReaderMode] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-
-  const { posts: allPosts } = usePosts();
 
   useEffect(() => {
     const savedReaderMode = localStorage.getItem('readerMode') === 'true';
@@ -32,30 +30,24 @@ const PostDetail = () => {
   }, []);
 
   useEffect(() => {
-    const fetchPost = async () => {
-      if (!slug) return;
-      setLoading(true);
-      setError(false);
-      setIsImageLoaded(false);
-      try {
-        const postModule = await import(`../../content/posts/${slug}.mdx`);
-        setPost({
-          frontmatter: postModule.frontmatter,
-          Content: postModule.default,
-        });
-      } catch (e) {
-        console.error("Failed to load post:", e);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (postsLoading) return; // Chờ cho đến khi tất cả bài viết được tải
 
-    fetchPost();
-  }, [slug]);
+    if (!slug) {
+      setError(true);
+      return;
+    }
+
+    const foundPost = allPosts.find(p => p.frontmatter.slug === slug);
+    if (foundPost) {
+      setPost(foundPost);
+      setError(false);
+    } else {
+      setError(true);
+    }
+  }, [slug, allPosts, postsLoading]); // Thêm allPosts và postsLoading vào dependency array
 
   useEffect(() => {
-    if (loading) return;
+    if (!post) return; // Chỉ xử lý khi post đã được tải
 
     const articleElement = document.querySelector('article');
     if (!articleElement) return;
@@ -69,22 +61,22 @@ const PostDetail = () => {
       return { level, text, slug: slugValue };
     });
     setHeadings(extractedHeadings);
-  }, [post, loading]);
+  }, [post]); // Chỉ chạy khi post thay đổi
 
   const { prevPost, nextPost } = useMemo(() => {
     if (!slug || allPosts.length === 0) return { prevPost: undefined, nextPost: undefined };
-    const currentIndex = allPosts.findIndex(p => p.slug === slug);
+    const currentIndex = allPosts.findIndex(p => p.frontmatter.slug === slug);
     if (currentIndex === -1) return { prevPost: undefined, nextPost: undefined };
     
-    const prev = currentIndex > 0 ? allPosts[currentIndex - 1] : undefined;
-    const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : undefined;
+    const prev = currentIndex > 0 ? allPosts[currentIndex - 1].frontmatter : undefined;
+    const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1].frontmatter : undefined;
     
     return { prevPost: prev, nextPost: next };
   }, [allPosts, slug]);
 
   const seriesPosts = useMemo(() => {
     if (!post?.frontmatter.series || allPosts.length === 0) return [];
-    return allPosts.filter(p => p.series === post.frontmatter.series);
+    return allPosts.filter(p => p.frontmatter.series === post.frontmatter.series).map(p => p.frontmatter);
   }, [allPosts, post]);
 
   const toggleReaderMode = () => {
@@ -95,7 +87,7 @@ const PostDetail = () => {
     });
   };
 
-  if (loading) {
+  if (postsLoading) { // Sử dụng trạng thái tải từ usePosts
     return (
       <div className="container max-w-3xl mx-auto px-4 py-8">
         <Skeleton className="h-12 w-3/4 mb-4" />

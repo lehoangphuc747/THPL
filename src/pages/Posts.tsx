@@ -26,9 +26,9 @@ const Posts = () => {
 
   const filterOptions = useMemo(() => {
     if (!posts) return { allCategories: [], allTags: [], allSeries: [] };
-    const allCategories = [...new Set(posts.map(p => p.category))].filter(c => typeof c === 'string');
-    const allTags = [...new Set(posts.flatMap(p => p.tags))].filter(t => typeof t === 'string');
-    const allSeries = [...new Set(posts.map(p => p.series).filter(Boolean))].filter(s => typeof s === 'string') as string[];
+    const allCategories = [...new Set(posts.map(p => p.frontmatter.category))].filter(c => typeof c === 'string');
+    const allTags = [...new Set(posts.flatMap(p => p.frontmatter.tags))].filter(t => typeof t === 'string');
+    const allSeries = [...new Set(posts.map(p => p.frontmatter.series).filter(Boolean))].filter(s => typeof s === 'string') as string[];
     return { allCategories, allTags, allSeries };
   }, [posts]);
 
@@ -38,14 +38,14 @@ const Posts = () => {
     let tempPosts = posts;
 
     tempPosts = tempPosts.filter(post => {
-      if (selectedCategory && post.category !== selectedCategory) return false;
-      if (selectedTag && (!post.tags || !post.tags.includes(selectedTag))) return false;
-      if (selectedSeries && post.series !== selectedSeries) return false;
+      if (selectedCategory && post.frontmatter.category !== selectedCategory) return false;
+      if (selectedTag && (!post.frontmatter.tags || !post.frontmatter.tags.includes(selectedTag))) return false;
+      if (selectedSeries && post.frontmatter.series !== selectedSeries) return false;
       return true;
     });
 
-    const pinnedPosts = tempPosts.filter(p => p.status === 'pinned');
-    const otherPosts = tempPosts.filter(p => p.status !== 'pinned');
+    const pinnedPosts = tempPosts.filter(p => p.frontmatter.status === 'pinned');
+    const otherPosts = tempPosts.filter(p => p.frontmatter.status !== 'pinned');
     return [...pinnedPosts, ...otherPosts];
   }, [posts, selectedCategory, selectedTag, selectedSeries]);
 
@@ -159,7 +159,7 @@ const Posts = () => {
               {postsToRender.length > 0 ? (
                 <div>
                   {postsToRender.map(post => (
-                    <PostListItem key={post.slug} post={post} />
+                    <PostListItem key={post.frontmatter.slug} post={post.frontmatter} />
                   ))}
                 </div>
               ) : (

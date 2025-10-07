@@ -54,7 +54,7 @@ const Home = () => {
           ) : (
             <div className="grid md:grid-cols-2 gap-8">
               {latestPosts.map(post => (
-                <PostCard key={post.slug} post={post} />
+                <PostCard key={post.frontmatter.slug} post={post.frontmatter} />
               ))}
             </div>
           )}
