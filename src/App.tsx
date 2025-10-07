@@ -9,6 +9,7 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Posts from "./pages/Posts";
 import PostDetail from "./pages/PostDetail";
+import SearchPage from "./pages/Search";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,7 +26,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/bai-viet" element={<Posts />} />
               <Route path="/bai-viet/:slug" element={<PostDetail />} />
-              {/* Các route khác sẽ được thêm vào đây */}
+              <Route path="/tim-kiem" element={<SearchPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
