@@ -15,9 +15,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { usePageContext } from '@/components/Layout';
 
 const PostDetail = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { scrollDirection } = usePageContext();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -143,7 +145,7 @@ const PostDetail = () => {
         <meta property="og:url" content={window.location.href} />
         <meta property="og:type" content="article" />
       </Helmet>
-      <ProgressBar />
+      <ProgressBar scrollDirection={scrollDirection} />
       <div className="container mx-auto px-4 py-8">
         <div className={`transition-all duration-300 ${isReaderMode ? 'max-w-3xl mx-auto' : 'max-w-5xl'}`}>
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">

@@ -1,5 +1,4 @@
 import { NavLink } from "react-router-dom";
-import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, Menu } from "lucide-react";
@@ -12,8 +11,11 @@ const navLinks = [
   { to: "/tim-kiem", label: "Tìm kiếm" },
 ];
 
-const Navbar = () => {
-  const scrollDirection = useScrollDirection();
+interface NavbarProps {
+  scrollDirection: 'down' | 'up' | null;
+}
+
+const Navbar = ({ scrollDirection }: NavbarProps) => {
   const { theme, setTheme } = useTheme();
   const isMobile = useIsMobile();
 
