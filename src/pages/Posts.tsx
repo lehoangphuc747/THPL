@@ -3,11 +3,12 @@ import PostListItem from '@/components/PostListItem';
 import SearchBox from '@/components/SearchBox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchParams } from 'react-router-dom';
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const POSTS_PER_PAGE = 10;
 
@@ -15,6 +16,7 @@ const Posts = () => {
   const { posts, loading } = usePosts();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
@@ -22,21 +24,27 @@ const Posts = () => {
   const selectedTag = searchParams.get('tag');
   const selectedSeries = searchParams.get('series');
 
-  const { filteredPosts, allCategories, allTags, allSeries } = useMemo(() => {
-    if (!posts) return { filteredPosts: [], allCategories: [], allTags: [], allSeries: [] };
+  const filterOptions = useMemo(() => {
+    if (!posts) return { allCategories: [], allTags: [], allSeries: [] };
+    const allCategories = [...new Set(posts.map(p => p.category))];
+    const allTags = [...new Set(posts.flatMap(p => p.tags))];
+    const allSeries = [...new Set(posts.map(p => p.series).filter(Boolean))] as string[];
+    return { allCategories, allTags, allSeries };
+  }, [posts]);
+
+  const filteredPosts = useMemo(() => {
+    if (!posts) return [];
 
     let tempPosts = posts;
 
-    // 1. Filter by search query
-    if (searchQuery.trim()) {
-      const lowercasedQuery = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const lowercasedQuery = debouncedSearchQuery.toLowerCase();
       tempPosts = tempPosts.filter(post =>
         post.title.toLowerCase().includes(lowercasedQuery) ||
         post.tags.some(tag => tag.toLowerCase().includes(lowercasedQuery))
       );
     }
 
-    // 2. Filter by URL params
     tempPosts = tempPosts.filter(post => {
       if (selectedCategory && post.category !== selectedCategory) return false;
       if (selectedTag && !post.tags.includes(selectedTag)) return false;
@@ -44,19 +52,11 @@ const Posts = () => {
       return true;
     });
 
-    // 3. Sort by pinning
     const pinnedPosts = tempPosts.filter(p => p.status === 'pinned');
     const otherPosts = tempPosts.filter(p => p.status !== 'pinned');
-    const sortedPosts = [...pinnedPosts, ...otherPosts];
+    return [...pinnedPosts, ...otherPosts];
+  }, [posts, debouncedSearchQuery, selectedCategory, selectedTag, selectedSeries]);
 
-    const categories = [...new Set(posts.map(p => p.category))];
-    const tags = [...new Set(posts.flatMap(p => p.tags))];
-    const series = [...new Set(posts.map(p => p.series).filter(Boolean))] as string[];
-
-    return { filteredPosts: sortedPosts, allCategories: categories, allTags: tags, allSeries: series };
-  }, [posts, searchQuery, selectedCategory, selectedTag, selectedSeries]);
-
-  // Infinite scroll logic
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -67,38 +67,42 @@ const Posts = () => {
       { threshold: 1.0 }
     );
 
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
+    const currentObserver = observerRef.current;
+    if (currentObserver) {
+      observer.observe(currentObserver);
     }
 
     return () => {
-      if (observerRef.current) {
-        observer.unobserve(observerRef.current);
+      if (currentObserver) {
+        observer.unobserve(currentObserver);
       }
     };
   }, [visibleCount, filteredPosts.length]);
   
-  // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(POSTS_PER_PAGE);
-  }, [searchQuery, selectedCategory, selectedTag, selectedSeries]);
+  }, [debouncedSearchQuery, selectedCategory, selectedTag, selectedSeries]);
 
+  const handleFilterChange = useCallback((type: 'category' | 'tag' | 'series', value: string) => {
+    setSearchParams(prevParams => {
+      const newParams = new URLSearchParams(prevParams);
+      const current = newParams.get(type);
+      if (current === value) {
+        newParams.delete(type);
+      } else {
+        newParams.set(type, value);
+      }
+      return newParams;
+    });
+  }, [setSearchParams]);
 
-  const handleFilterChange = (type: 'category' | 'tag' | 'series', value: string) => {
-    const newParams = new URLSearchParams();
-    const current = searchParams.get(type);
-    if (current !== value) {
-      newParams.set(type, value);
-    }
-    setSearchParams(newParams);
-  };
-
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchParams({});
     setSearchQuery('');
-  };
+  }, [setSearchParams]);
 
   const postsToRender = filteredPosts.slice(0, visibleCount);
+  const hasActiveFilters = !!(selectedCategory || selectedTag || selectedSeries || debouncedSearchQuery);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -106,8 +110,8 @@ const Posts = () => {
         <aside className="w-full md:w-1/4 lg:w-1/5">
           <div className="sticky top-20 space-y-4">
             <h2 className="text-xl font-semibold">Bộ lọc</h2>
-            {(selectedCategory || selectedTag || selectedSeries) && (
-              <Button variant="ghost" onClick={clearFilters} className="w-full justify-start px-0">
+            {hasActiveFilters && (
+              <Button variant="ghost" onClick={clearFilters} className="w-full justify-start px-0 h-auto py-1">
                 Xóa tất cả bộ lọc
               </Button>
             )}
@@ -116,7 +120,7 @@ const Posts = () => {
                 Danh mục <ChevronDown className="w-4 h-4" />
               </CollapsibleTrigger>
               <CollapsibleContent className="flex flex-wrap gap-2 pt-2">
-                {allCategories.map(category => (
+                {filterOptions.allCategories.map(category => (
                   <Badge key={category} variant={selectedCategory === category ? 'default' : 'secondary'} className="cursor-pointer" onClick={() => handleFilterChange('category', category)}>
                     {category}
                   </Badge>
@@ -128,7 +132,7 @@ const Posts = () => {
                 Thẻ <ChevronDown className="w-4 h-4" />
               </CollapsibleTrigger>
               <CollapsibleContent className="flex flex-wrap gap-2 pt-2">
-                {allTags.map(tag => (
+                {filterOptions.allTags.map(tag => (
                   <Badge key={tag} variant={selectedTag === tag ? 'default' : 'secondary'} className="cursor-pointer" onClick={() => handleFilterChange('tag', tag)}>
                     {tag}
                   </Badge>
@@ -140,7 +144,7 @@ const Posts = () => {
                 Series <ChevronDown className="w-4 h-4" />
               </CollapsibleTrigger>
               <CollapsibleContent className="flex flex-wrap gap-2 pt-2">
-                {allSeries.map(series => (
+                {filterOptions.allSeries.map(series => (
                   <Badge key={series} variant={selectedSeries === series ? 'default' : 'secondary'} className="cursor-pointer" onClick={() => handleFilterChange('series', series)}>
                     {series}
                   </Badge>
@@ -171,7 +175,11 @@ const Posts = () => {
                   ))}
                 </div>
               ) : (
-                <p>Không tìm thấy bài viết nào phù hợp.</p>
+                <p>
+                  {hasActiveFilters
+                    ? "Không tìm thấy bài viết nào phù hợp với bộ lọc của bạn."
+                    : "Chưa có bài viết nào."}
+                </p>
               )}
               {visibleCount < filteredPosts.length && (
                 <div ref={observerRef} className="h-10 flex justify-center items-center">
