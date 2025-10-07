@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { Post, Heading } from '@/types/post';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, User, Folder, RefreshCw, Tags } from 'lucide-react';
+import { Calendar, User, Folder, RefreshCw, Tags, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 import { usePosts } from '@/hooks/usePosts';
@@ -13,6 +13,7 @@ import PostActions from '@/components/PostActions';
 import PostNavigation from '@/components/PostNavigation';
 import { cn } from '@/lib/utils';
 import { usePageContext } from '@/components/Layout';
+import { Button } from '@/components/ui/button'; // Import Button component
 
 const PostDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -128,6 +129,14 @@ const PostDetail = () => {
       <ProgressBar scrollDirection={scrollDirection} />
       <div className="container mx-auto px-4 py-8">
         <div className={cn("mx-auto transition-all duration-300", isReaderMode ? 'max-w-3xl' : 'max-w-5xl')}>
+          <div className="mb-8"> {/* Container for the back button */}
+            <Button variant="ghost" asChild>
+              <Link to="/bai-viet" className="flex items-center gap-2 text-primary hover:underline">
+                <ArrowLeft className="w-4 h-4" />
+                Tất cả bài viết
+              </Link>
+            </Button>
+          </div>
           <article>
             <header className="mb-8">
               <h1 className="text-4xl font-bold mb-2">{frontmatter.title}</h1>
