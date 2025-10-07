@@ -9,9 +9,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const navLinks = [
   { to: "/", label: "Trang chủ" },
   { to: "/bai-viet", label: "Bài viết" },
-  { to: "/du-an", label: "Dự án" },
-  { to: "/gioi-thieu", label: "Giới thiệu" },
-  { to: "/uses", label: "Uses" },
   { to: "/tim-kiem", label: "Tìm kiếm" },
 ];
 
@@ -30,11 +27,7 @@ const Navbar = () => {
         scrollDirection === "down" ? "-translate-y-full" : "translate-y-0"
       }`}
     >
-      <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <NavLink to="/" className="font-bold text-lg">
-          Tiếng Hàn Phúc Lee
-        </NavLink>
-        
+      <nav className="container mx-auto px-4 h-16 flex items-center justify-end">
         {isMobile ? (
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={toggleTheme}>
