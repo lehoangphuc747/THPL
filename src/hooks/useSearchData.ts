@@ -2,10 +2,6 @@ import { useState, useEffect } from 'react';
 import { PostFrontmatter } from '@/types/post';
 import matter from 'gray-matter';
 
-interface PostModule {
-  frontmatter: PostFrontmatter;
-}
-
 export interface SearchablePost extends PostFrontmatter {
   content: string;
 }
@@ -16,26 +12,35 @@ export function useSearchData() {
 
   useEffect(() => {
     const fetchPosts = () => {
-      const modules = import.meta.glob<PostModule>('/content/posts/*.mdx', { eager: true });
-      const rawContentModules = import.meta.glob('/content/posts/*.mdx?raw', { eager: true });
+      // Import tất cả các tệp .mdx dưới dạng chuỗi văn bản thô
+      const rawContentModules = import.meta.glob('/content/posts/*.mdx', { as: 'raw', eager: true });
 
-      const allPosts = Object.entries(modules).map(([path, module]) => {
-        if (module && module.frontmatter) {
-          const rawPath = `${path}?raw`;
-          const rawFileContent = rawContentModules[rawPath] as string | undefined;
-
-          if (typeof rawFileContent === 'string') {
-            const { content } = matter(rawFileContent);
-            return { 
-              ...module.frontmatter,
-              content: content,
-            };
-          } else {
-            console.error(`Không thể đọc nội dung cho bài viết: ${path}`);
+      const allPosts = Object.values(rawContentModules)
+        .map((rawFileContent) => {
+          if (typeof rawFileContent !== 'string') {
+            return null;
           }
-        }
-        return null;
-      }).filter(Boolean) as SearchablePost[];
+          try {
+            // Tự phân tích frontmatter và nội dung bằng gray-matter
+            const { data, content } = matter(rawFileContent);
+            const frontmatter = data as PostFrontmatter;
+            
+            // Kiểm tra cơ bản để đảm bảo đây là một bài viết hợp lệ
+            if (!frontmatter.slug || !frontmatter.title) {
+              console.warn("Bỏ qua bài viết thiếu slug hoặc title.", data);
+              return null;
+            }
+
+            return { 
+              ...frontmatter,
+              content: content, // Nội dung thực tế để tìm kiếm
+            };
+          } catch (e) {
+            console.error("Lỗi phân tích frontmatter của MDX:", e);
+            return null;
+          }
+        })
+        .filter((p): p is SearchablePost => p !== null);
 
       const visiblePosts = allPosts
         .filter(post => post.status === 'published' || post.status === 'pinned')
