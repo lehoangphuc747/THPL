@@ -26,9 +26,10 @@ const Posts = () => {
 
   const filterOptions = useMemo(() => {
     if (!posts) return { allCategories: [], allTags: [], allSeries: [] };
-    const allCategories = [...new Set(posts.map(p => p.category))];
-    const allTags = [...new Set(posts.flatMap(p => p.tags))];
-    const allSeries = [...new Set(posts.map(p => p.series).filter(Boolean))] as string[];
+    // Lọc để đảm bảo tất cả các mục là chuỗi, tránh lỗi render từ dữ liệu frontmatter không hợp lệ
+    const allCategories = [...new Set(posts.map(p => p.category))].filter(c => typeof c === 'string');
+    const allTags = [...new Set(posts.flatMap(p => p.tags))].filter(t => typeof t === 'string');
+    const allSeries = [...new Set(posts.map(p => p.series).filter(Boolean))].filter(s => typeof s === 'string') as string[];
     return { allCategories, allTags, allSeries };
   }, [posts]);
 
@@ -41,13 +42,13 @@ const Posts = () => {
       const lowercasedQuery = debouncedSearchQuery.toLowerCase();
       tempPosts = tempPosts.filter(post =>
         post.title.toLowerCase().includes(lowercasedQuery) ||
-        post.tags.some(tag => tag.toLowerCase().includes(lowercasedQuery))
+        (post.tags && Array.isArray(post.tags) && post.tags.some(tag => typeof tag === 'string' && tag.toLowerCase().includes(lowercasedQuery)))
       );
     }
 
     tempPosts = tempPosts.filter(post => {
       if (selectedCategory && post.category !== selectedCategory) return false;
-      if (selectedTag && !post.tags.includes(selectedTag)) return false;
+      if (selectedTag && (!post.tags || !post.tags.includes(selectedTag))) return false;
       if (selectedSeries && post.series !== selectedSeries) return false;
       return true;
     });
