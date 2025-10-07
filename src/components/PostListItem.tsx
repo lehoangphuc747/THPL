@@ -10,7 +10,7 @@ const PostListItem = ({ post }: PostListItemProps) => {
     <Link to={`/bai-viet/${post.slug}`} className="block">
       <div className="py-4 border-b hover:bg-muted/50 px-4 rounded-md transition-colors">
         <h3 className="text-lg font-medium">{post.title}</h3>
-        <p className="text-sm text-muted-foreground">{post.category}</p>
+        {/* <p className="text-sm text-muted-foreground">{post.category}</p> */}
       </div>
     </Link>
   );
