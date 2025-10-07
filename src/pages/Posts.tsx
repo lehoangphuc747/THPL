@@ -20,13 +20,16 @@ const Posts = () => {
   const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
+  const [isCategoryOpen, setIsCategoryOpen] = useState(true);
+  const [isTagOpen, setIsTagOpen] = useState(false);
+  const [isSeriesOpen, setIsSeriesOpen] = useState(false);
+
   const selectedCategory = searchParams.get('category');
   const selectedTag = searchParams.get('tag');
   const selectedSeries = searchParams.get('series');
 
   const filterOptions = useMemo(() => {
     if (!posts) return { allCategories: [], allTags: [], allSeries: [] };
-    // Lọc để đảm bảo tất cả các mục là chuỗi, tránh lỗi render từ dữ liệu frontmatter không hợp lệ
     const allCategories = [...new Set(posts.map(p => p.category))].filter(c => typeof c === 'string');
     const allTags = [...new Set(posts.flatMap(p => p.tags))].filter(t => typeof t === 'string');
     const allSeries = [...new Set(posts.map(p => p.series).filter(Boolean))].filter(s => typeof s === 'string') as string[];
@@ -116,9 +119,9 @@ const Posts = () => {
                 Xóa tất cả bộ lọc
               </Button>
             )}
-            <Collapsible defaultOpen>
+            <Collapsible open={isCategoryOpen} onOpenChange={setIsCategoryOpen}>
               <CollapsibleTrigger className="flex justify-between items-center w-full font-medium py-2">
-                Danh mục <ChevronDown className="w-4 h-4" />
+                Danh mục <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="flex flex-wrap gap-2 pt-2">
                 {filterOptions.allCategories.map(category => (
@@ -128,9 +131,9 @@ const Posts = () => {
                 ))}
               </CollapsibleContent>
             </Collapsible>
-            <Collapsible>
+            <Collapsible open={isTagOpen} onOpenChange={setIsTagOpen}>
               <CollapsibleTrigger className="flex justify-between items-center w-full font-medium py-2">
-                Thẻ <ChevronDown className="w-4 h-4" />
+                Thẻ <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isTagOpen ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="flex flex-wrap gap-2 pt-2">
                 {filterOptions.allTags.map(tag => (
@@ -140,9 +143,9 @@ const Posts = () => {
                 ))}
               </CollapsibleContent>
             </Collapsible>
-            <Collapsible>
+            <Collapsible open={isSeriesOpen} onOpenChange={setIsSeriesOpen}>
               <CollapsibleTrigger className="flex justify-between items-center w-full font-medium py-2">
-                Series <ChevronDown className="w-4 h-4" />
+                Series <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isSeriesOpen ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="flex flex-wrap gap-2 pt-2">
                 {filterOptions.allSeries.map(series => (
