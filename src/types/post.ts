@@ -1,6 +1,7 @@
 export interface PostFrontmatter {
   slug: string;
   title: string;
+  description: string;
   date: string;
   updated: string;
   status: "published" | "draft" | "unlisted" | "pinned";

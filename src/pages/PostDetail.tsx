@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { Post, Heading } from '@/types/post';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, User, Folder, Menu } from 'lucide-react';
+import { Calendar, User, Folder, Menu, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 import { usePosts } from '@/hooks/usePosts';
@@ -14,6 +14,7 @@ import PostNavigation from '@/components/PostNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const PostDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -22,6 +23,7 @@ const PostDetail = () => {
   const [error, setError] = useState(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [isReaderMode, setIsReaderMode] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const isMobile = useIsMobile();
 
   const { posts: allPosts } = usePosts();
@@ -36,6 +38,7 @@ const PostDetail = () => {
       if (!slug) return;
       setLoading(true);
       setError(false);
+      setIsImageLoaded(false);
       try {
         const postModule = await import(`../../content/posts/${slug}.mdx`);
         setPost({
@@ -112,9 +115,15 @@ const PostDetail = () => {
   }
 
   const { frontmatter, Content } = post;
-  const postDate = new Date(frontmatter.date).toLocaleDateString('vi-VN', {
-    year: 'numeric', month: 'long', day: 'numeric',
-  });
+  const postDate = new Date(frontmatter.date);
+  const updatedDate = new Date(frontmatter.updated);
+  const showUpdatedDate = updatedDate > postDate && updatedDate.toDateString() !== postDate.toDateString();
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('vi-VN', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    });
+  };
 
   const SidebarContent = () => (
     <>
@@ -127,6 +136,12 @@ const PostDetail = () => {
     <>
       <Helmet>
         <title>{`${frontmatter.title} | Tiếng Hàn Phúc Lee`}</title>
+        <meta name="description" content={frontmatter.description} />
+        <meta property="og:title" content={frontmatter.title} />
+        <meta property="og:description" content={frontmatter.description} />
+        {frontmatter.cover && <meta property="og:image" content={frontmatter.cover} />}
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="article" />
       </Helmet>
       <ProgressBar />
       <div className="container mx-auto px-4 py-8">
@@ -142,8 +157,14 @@ const PostDetail = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <time dateTime={frontmatter.date}>{postDate}</time>
+                    <time dateTime={frontmatter.date}>{formatDate(postDate)}</time>
                   </div>
+                  {showUpdatedDate && (
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4" />
+                      <time dateTime={frontmatter.updated}>{formatDate(updatedDate)}</time>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <Folder className="w-4 h-4" />
                     <Link to={`/bai-viet?category=${encodeURIComponent(frontmatter.category)}`} className="hover:text-primary hover:underline">
@@ -155,7 +176,15 @@ const PostDetail = () => {
 
               {frontmatter.cover && (
                 <figure className="mb-8">
-                  <img src={frontmatter.cover} alt={frontmatter.coverAlt} className="w-full rounded-lg aspect-video object-cover" loading={frontmatter.coverPriority ? 'eager' : 'lazy'} />
+                  <div className="w-full aspect-video bg-muted rounded-lg overflow-hidden">
+                    <img 
+                      src={frontmatter.cover} 
+                      alt={frontmatter.coverAlt} 
+                      className={cn("w-full h-full object-cover transition-opacity duration-500", isImageLoaded ? "opacity-100" : "opacity-0")}
+                      onLoad={() => setIsImageLoaded(true)}
+                      loading={frontmatter.coverPriority ? 'eager' : 'lazy'} 
+                    />
+                  </div>
                   {(frontmatter.coverCaption || frontmatter.coverCredit) && (
                     <figcaption className="text-center text-sm text-muted-foreground mt-2">
                       {frontmatter.coverCaption} {frontmatter.coverCredit && `(Ảnh: ${frontmatter.coverCredit})`}
