@@ -11,6 +11,9 @@ import Posts from "./pages/Posts";
 import PostDetail from "./pages/PostDetail";
 import SearchPage from "./pages/Search";
 import NotFound from "./pages/NotFound";
+import AboutPage from "./pages/About";
+import ProjectsPage from "./pages/Projects";
+import UsesPage from "./pages/Uses";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +30,9 @@ const App = () => (
               <Route path="/bai-viet" element={<Posts />} />
               <Route path="/bai-viet/:slug" element={<PostDetail />} />
               <Route path="/tim-kiem" element={<SearchPage />} />
+              <Route path="/gioi-thieu" element={<AboutPage />} />
+              <Route path="/du-an" element={<ProjectsPage />} />
+              <Route path="/uses" element={<UsesPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

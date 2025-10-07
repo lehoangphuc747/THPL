@@ -2,11 +2,23 @@ import { NavLink } from "react-router-dom";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+const navLinks = [
+  { to: "/", label: "Trang chủ" },
+  { to: "/bai-viet", label: "Bài viết" },
+  { to: "/du-an", label: "Dự án" },
+  { to: "/gioi-thieu", label: "Giới thiệu" },
+  { to: "/uses", label: "Uses" },
+  { to: "/tim-kiem", label: "Tìm kiếm" },
+];
 
 const Navbar = () => {
   const scrollDirection = useScrollDirection();
   const { theme, setTheme } = useTheme();
+  const isMobile = useIsMobile();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -22,37 +34,61 @@ const Navbar = () => {
         <NavLink to="/" className="font-bold text-lg">
           Tiếng Hàn Phúc Lee
         </NavLink>
-        <div className="flex items-center gap-4">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? "text-primary font-semibold" : "hover:text-primary"
-            }
-          >
-            Trang chủ
-          </NavLink>
-          <NavLink
-            to="/bai-viet"
-            className={({ isActive }) =>
-              isActive ? "text-primary font-semibold" : "hover:text-primary"
-            }
-          >
-            Bài viết
-          </NavLink>
-          <NavLink
-            to="/tim-kiem"
-            className={({ isActive }) =>
-              isActive ? "text-primary font-semibold" : "hover:text-primary"
-            }
-          >
-            Tìm kiếm
-          </NavLink>
-          <Button variant="ghost" size="icon" onClick={toggleTheme}>
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-        </div>
+        
+        {isMobile ? (
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <div className="flex flex-col items-start gap-4 pt-8">
+                  {navLinks.map(({ to, label }) => (
+                    <SheetClose asChild key={to}>
+                      <NavLink
+                        to={to}
+                        className={({ isActive }) =>
+                          `transition-colors text-xl ${
+                            isActive ? "text-primary font-semibold" : "hover:text-primary"
+                          }`
+                        }
+                      >
+                        {label}
+                      </NavLink>
+                    </SheetClose>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            {navLinks.map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `transition-colors ${
+                    isActive ? "text-primary font-semibold" : "hover:text-primary"
+                  }`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          </div>
+        )}
       </nav>
     </header>
   );
