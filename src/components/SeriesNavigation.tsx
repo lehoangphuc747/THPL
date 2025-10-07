@@ -9,8 +9,8 @@ interface SeriesNavigationProps {
 }
 
 const SeriesNavigation = ({ seriesName, currentSlug, seriesPosts }: SeriesNavigationProps) => {
-  // Sắp xếp bài viết theo thứ tự phần
-  const sortedPosts = [...seriesPosts].sort((a, b) => (a.series?.part || 0) - (b.series?.part || 0));
+  // Các bài viết đã được sắp xếp theo ngày tháng từ hook usePosts.
+  const sortedPosts = seriesPosts;
 
   return (
     <Card className="my-8 bg-secondary/50">

@@ -43,7 +43,7 @@ const PostDetail = () => {
       return [];
     }
     return allPosts.filter(
-      p => p.series && p.series.name === post.frontmatter.series?.name
+      p => p.series === post.frontmatter.series
     );
   }, [allPosts, post]);
 
@@ -107,7 +107,7 @@ const PostDetail = () => {
 
         {frontmatter.series && seriesPosts.length > 1 && (
           <SeriesNavigation
-            seriesName={frontmatter.series.name}
+            seriesName={frontmatter.series}
             currentSlug={frontmatter.slug}
             seriesPosts={seriesPosts}
           />

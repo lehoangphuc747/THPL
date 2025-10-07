@@ -16,7 +16,7 @@ const Posts = () => {
   const { filteredPosts, allCategories, allTags } = useMemo(() => {
     if (!posts) return { filteredPosts: [], allCategories: [], allTags: [] };
 
-    const filtered = posts.filter(post => {
+    const categoryAndTagFilteredPosts = posts.filter(post => {
       if (selectedCategory && post.category !== selectedCategory) {
         return false;
       }
@@ -26,10 +26,15 @@ const Posts = () => {
       return true;
     });
 
+    const pinnedPosts = categoryAndTagFilteredPosts.filter(p => p.status === 'pinned');
+    const otherPosts = categoryAndTagFilteredPosts.filter(p => p.status !== 'pinned');
+
+    const sortedPosts = [...pinnedPosts, ...otherPosts];
+
     const categories = [...new Set(posts.map(p => p.category))];
     const tags = [...new Set(posts.flatMap(p => p.tags))];
 
-    return { filteredPosts: filtered, allCategories: categories, allTags: tags };
+    return { filteredPosts: sortedPosts, allCategories: categories, allTags: tags };
   }, [posts, selectedCategory, selectedTag]);
 
   const handleFilterChange = (type: 'category' | 'tag', value: string) => {

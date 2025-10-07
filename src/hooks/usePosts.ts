@@ -20,11 +20,11 @@ export function usePosts() {
         return null;
       }).filter(Boolean) as PostFrontmatter[];
 
-      const publishedPosts = allPosts
-        .filter(post => post.status === 'published')
+      const visiblePosts = allPosts
+        .filter(post => post.status === 'published' || post.status === 'pinned')
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-      setPosts(publishedPosts);
+      setPosts(visiblePosts);
       setLoading(false);
     };
 

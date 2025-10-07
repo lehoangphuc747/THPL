@@ -3,17 +3,17 @@ export interface PostFrontmatter {
   title: string;
   date: string;
   updated: string;
-  status: "published" | "draft";
+  status: "published" | "draft" | "unlisted" | "pinned";
   author: string;
   category: string;
+  subcategory?: string;
   tags: string[];
-  cover: string;
+  cover?: string;
   coverAlt: string;
-  coverCaption: string;
-  series?: {
-    name: string;
-    part: number;
-  };
+  coverCaption?: string;
+  coverCredit?: string;
+  coverPriority?: boolean;
+  series?: string;
 }
 
 export interface Post {
