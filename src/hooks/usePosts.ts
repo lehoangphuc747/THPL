@@ -11,8 +11,8 @@ export function usePosts() {
 
   useEffect(() => {
     const fetchPosts = () => {
-      // Sửa lại đường dẫn thành đường dẫn tương đối để đảm bảo Vite tìm thấy file
-      const modules = import.meta.glob<PostModule>('../../content/posts/*.mdx', { eager: true });
+      // Sử dụng đường dẫn tuyệt đối từ gốc dự án để đảm bảo Vite tìm thấy file
+      const modules = import.meta.glob<PostModule>('/content/posts/*.mdx', { eager: true });
       
       const allPosts = Object.values(modules).map(module => {
         // Thêm kiểm tra để đảm bảo frontmatter tồn tại
