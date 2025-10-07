@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PostFrontmatter } from '@/types/post';
+import matter from 'gray-matter';
 
 interface PostModule {
   frontmatter: PostFrontmatter;
@@ -20,10 +21,11 @@ export function useSearchData() {
 
       const allPosts = Object.entries(modules).map(([path, module]) => {
         if (module && module.frontmatter) {
-          const rawContent = rawContentModules[path];
+          const rawFileContent = rawContentModules[path];
+          const { content } = matter(rawFileContent); // Tách riêng phần nội dung
           return { 
             ...module.frontmatter,
-            content: rawContent,
+            content: content, // Chỉ tìm kiếm trong nội dung bài viết
           };
         }
         return null;
