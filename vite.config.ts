@@ -14,7 +14,10 @@ export default defineConfig(() => ({
   plugins: [
     dyadComponentTagger(), 
     mdx({
-      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
+      remarkPlugins: [
+        [remarkFrontmatter, 'yaml'],
+        remarkMdxFrontmatter
+      ],
     }), 
     react()
   ],

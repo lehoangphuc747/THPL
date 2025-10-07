@@ -17,13 +17,13 @@ export function useSearchData() {
   useEffect(() => {
     const fetchPosts = () => {
       const modules = import.meta.glob<PostModule>('/content/posts/*.mdx', { eager: true });
-      const rawContentModules = import.meta.glob('/content/posts/*.mdx', { as: 'raw', eager: true });
+      const rawContentModules = import.meta.glob('/content/posts/*.mdx?raw', { eager: true });
 
       const allPosts = Object.entries(modules).map(([path, module]) => {
         if (module && module.frontmatter) {
-          const rawFileContent = rawContentModules[path];
+          const rawPath = `${path}?raw`;
+          const rawFileContent = rawContentModules[rawPath] as string | undefined;
 
-          // Kiểm tra an toàn: chỉ xử lý nếu nội dung là một chuỗi ký tự
           if (typeof rawFileContent === 'string') {
             const { content } = matter(rawFileContent);
             return { 
