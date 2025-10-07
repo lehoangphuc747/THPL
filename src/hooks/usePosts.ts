@@ -11,23 +11,27 @@ export function usePosts() {
 
   useEffect(() => {
     const fetchPosts = () => {
-      // Sử dụng đường dẫn tuyệt đối từ gốc dự án để đảm bảo Vite tìm thấy file
+      console.log('--- [DEBUG] Bắt đầu quá trình tải bài viết ---');
+
       const modules = import.meta.glob<PostModule>('/content/posts/*.mdx', { eager: true });
-      
+      console.log('1. Tìm thấy các module bài viết:', modules);
+
       const allPosts = Object.values(modules).map(module => {
-        // Thêm kiểm tra để đảm bảo frontmatter tồn tại
         if (module.frontmatter) {
           return { ...module.frontmatter };
         }
         return null;
       }).filter(Boolean) as PostFrontmatter[];
+      console.log('2. Tất cả bài viết đã được xử lý (trước khi lọc theo status):', allPosts);
 
       const publishedPosts = allPosts
         .filter(post => post.status === 'published')
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      console.log('3. Các bài viết đã xuất bản (sau khi lọc):', publishedPosts);
 
       setPosts(publishedPosts);
       setLoading(false);
+      console.log('--- [DEBUG] Kết thúc quá trình tải bài viết ---');
     };
 
     fetchPosts();
