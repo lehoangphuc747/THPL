@@ -5,6 +5,7 @@ import path from "path";
 import mdx from "@mdx-js/rollup";
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
+import remarkBreaks from 'remark-breaks';
 
 export default defineConfig(() => ({
   server: {
@@ -16,7 +17,8 @@ export default defineConfig(() => ({
     mdx({
       remarkPlugins: [
         [remarkFrontmatter, 'yaml'],
-        remarkMdxFrontmatter
+        remarkMdxFrontmatter,
+        remarkBreaks
       ],
     }), 
     react()
