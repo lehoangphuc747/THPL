@@ -1,0 +1,6 @@
+/* Thêm các quy tắc CSS khác của bạn ở đây */
+
+/* Đảm bảo các ngắt dòng trong nội dung MDX được hiển thị đúng cách */
+.markdown-content p {
+  white-space: pre-line;
+}
